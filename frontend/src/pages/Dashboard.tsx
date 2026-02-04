@@ -22,7 +22,7 @@ import { Add as AddIcon, Logout as LogoutIcon, ViewList as ViewListIcon, Calenda
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import enUS from 'date-fns/locale/en-US';
+import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { useSnackbar } from 'notistack';
@@ -135,8 +135,6 @@ export default function Dashboard() {
     });
   };
 
-  const scheduledActivities = activities.filter(a => a.scheduledAt && !a.recordedAt && !a.deletedAt);
-  const recordedActivities = activities.filter(a => a.recordedAt && !a.deletedAt);
 
   // Convert activities to calendar events
   const calendarEvents = activities
@@ -402,8 +400,8 @@ export default function Dashboard() {
             <DnDCalendar
               localizer={localizer}
               events={calendarEvents}
-              startAccessor="start"
-              endAccessor="end"
+              startAccessor={(event: any) => event.start}
+              endAccessor={(event: any) => event.end}
               style={{ height: '100%' }}
               views={['month', 'week', 'day']}
               defaultView="month"

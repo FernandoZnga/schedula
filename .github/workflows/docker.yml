@@ -45,7 +45,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Validate docker-compose
-        run: docker-compose config
+        run: docker compose config
 
       - name: Test docker-compose build
-        run: docker-compose build --no-cache
+        run: docker compose build --no-cache

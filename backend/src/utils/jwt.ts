@@ -11,18 +11,28 @@ export interface JWTPayload {
  * Generate access token (short expiry)
  */
 export function generateAccessToken(payload: JWTPayload): string {
-  return jwt.sign(payload, config.jwt.accessSecret, {
-    expiresIn: config.jwt.accessExpiry,
-  });
+  // @ts-expect-error - jsonwebtoken types have overload resolution issues
+  return jwt.sign(
+    payload,
+    config.jwt.accessSecret,
+    {
+      expiresIn: config.jwt.accessExpiry,
+    }
+  );
 }
 
 /**
  * Generate refresh token (long expiry)
  */
 export function generateRefreshToken(payload: JWTPayload): string {
-  return jwt.sign(payload, config.jwt.refreshSecret, {
-    expiresIn: config.jwt.refreshExpiry,
-  });
+  // @ts-expect-error - jsonwebtoken types have overload resolution issues
+  return jwt.sign(
+    payload,
+    config.jwt.refreshSecret,
+    {
+      expiresIn: config.jwt.refreshExpiry,
+    }
+  );
 }
 
 /**
