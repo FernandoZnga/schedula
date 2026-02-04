@@ -1,0 +1,51 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create dummy .env file
+        run: |
+          cp .env.sample .env
+          # Set dummy values for required secrets
+          sed -i 's/your-secret-here/dummy-secret-for-testing/g' .env
+          sed -i 's/your-refresh-secret-here/dummy-refresh-secret-for-testing/g' .env
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+          tags: schedula-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          tags: schedula-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Validate docker-compose
+        run: docker-compose config
+
+      - name: Test docker-compose build
+        run: docker-compose build --no-cache

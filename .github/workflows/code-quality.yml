@@ -1,0 +1,87 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check for ESLint config in backend
+        id: backend-eslint
+        run: |
+          if [ -f "backend/.eslintrc.js" ] || [ -f "backend/.eslintrc.json" ] || [ -f "backend/eslint.config.js" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for ESLint config in frontend
+        id: frontend-eslint
+        run: |
+          if [ -f "frontend/.eslintrc.js" ] || [ -f "frontend/.eslintrc.json" ] || [ -f "frontend/eslint.config.js" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install and lint backend
+        if: steps.backend-eslint.outputs.exists == 'true'
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run lint || echo "::warning::Backend linting failed or no lint script found"
+
+      - name: Install and lint frontend
+        if: steps.frontend-eslint.outputs.exists == 'true'
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run lint || echo "::warning::Frontend linting failed or no lint script found"
+
+      - name: Skip linting
+        if: steps.backend-eslint.outputs.exists == 'false' && steps.frontend-eslint.outputs.exists == 'false'
+        run: echo "::notice::No ESLint configuration found. Skipping linting."
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Audit root dependencies
+        run: |
+          npm audit --audit-level=moderate || echo "::warning::Security vulnerabilities found in root dependencies"
+        continue-on-error: true
+
+      - name: Audit backend dependencies
+        working-directory: ./backend
+        run: |
+          npm audit --audit-level=moderate || echo "::warning::Security vulnerabilities found in backend dependencies"
+        continue-on-error: true
+
+      - name: Audit frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm audit --audit-level=moderate || echo "::warning::Security vulnerabilities found in frontend dependencies"
+        continue-on-error: true
