@@ -1,0 +1,129 @@
+// Schedula Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  WAITING_EMAIL_CONFIRMATION
+  SUSPENDED
+}
+
+enum EmailTokenType {
+  CONFIRM_EMAIL
+  RESET_PASSWORD
+}
+
+enum ActivityType {
+  DOCTOR_APPOINTMENT
+  CALL
+  MEETING
+  GYM
+  GROCERY_RUN
+  STUDY_SESSION
+  PAY_BILLS
+  CAR_MAINTENANCE
+  DENTIST_APPOINTMENT
+  HAIRCUT
+  WORKOUT
+  LUNCH_MEETING
+  TEAM_STANDUP
+  CLIENT_CALL
+  PERSONAL_TIME
+  OTHER
+}
+
+enum CompletionOutcome {
+  COMPLETED_OK
+  NO_SHOW
+  DID_NOT_ANSWER
+  CANCELLED
+  FAILED
+}
+
+model User {
+  id                   String             @id @default(uuid())
+  email                String             @unique
+  passwordHash         String
+  firstName            String?
+  lastName             String?
+  status               UserStatus         @default(WAITING_EMAIL_CONFIRMATION)
+  failedLoginAttempts  Int                @default(0)
+  lastLoginAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  passwordHistory      PasswordHistory[]
+  emailTokens          EmailToken[]
+  refreshTokens        RefreshToken[]
+  activities           Activity[]
+
+  @@index([email])
+}
+
+model PasswordHistory {
+  id            String   @id @default(uuid())
+  userId        String
+  passwordHash  String
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model EmailToken {
+  id         String          @id @default(uuid())
+  userId     String
+  type       EmailTokenType
+  tokenHash  String          @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId, type])
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique
+  revokedAt  DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+model Activity {
+  id                String              @id @default(uuid())
+  userId            String
+  title             String?
+  notes             String?
+  activityType      ActivityType
+  scheduledAt       DateTime?
+  recordedAt        DateTime?
+  completionOutcome CompletionOutcome?
+  deletedAt         DateTime?
+  deletedReason     String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, scheduledAt])
+  @@index([userId, recordedAt])
+  @@index([userId, deletedAt])
+}
