@@ -27,7 +27,7 @@ jobs:
           sed -i 's/your-refresh-secret-here/dummy-refresh-secret-for-testing/g' .env
 
       - name: Build backend image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./backend
           push: false
@@ -36,7 +36,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build frontend image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: false
