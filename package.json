@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "nodemailer": "^6.9.13"
+    "nodemailer": "^8.0.1"
   },
   "devDependencies": {
     "prisma": "^7.3.0",
