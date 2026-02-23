@@ -3,7 +3,7 @@
     "nodemailer": "^6.9.13"
   },
   "devDependencies": {
-    "prisma": "^7.3.0",
+    "prisma": "^7.4.1",
     "@types/nodemailer": "^7.0.9"
   }
 }
